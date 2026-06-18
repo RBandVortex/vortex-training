@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vortex Contracting — Training Sign-Off Tracker</title>
+<style>
+:root {
+  --blue:#1B3A8C; --mid:#2E6DB4; --light:#D5E8F0; --pale:#EEF3FF;
+  --green:#27AE60; --lgreen:#E8F5E9; --orange:#E67E22; --red:#E74C3C;
+  --grey:#F5F5F5; --dgrey:#888; --white:#fff; --text:#222;
+  --border:#D0D8EE;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;font-size:14px;background:#ECEFF4;color:var(--text)}
+
+/* ── TOP BAR ── */
+.topbar{background:var(--blue);color:#fff;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.topbar-left h1{font-size:18px;font-weight:700}
+.topbar-left .sub{font-size:12px;opacity:.75;margin-top:2px}
+.topbar-right{display:flex;gap:10px;align-items:center}
+.topbar-right button{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.3);padding:7px 14px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer}
+.topbar-right button:hover{background:rgba(255,255,255,.28)}
+.topbar-right button.active{background:#fff;color:var(--blue)}
+
+/* ── TABS ── */
+.tab-nav{background:#fff;border-bottom:2px solid var(--light);display:flex;gap:0;max-width:100%;position:sticky;top:53px;z-index:190;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.tab-btn{padding:13px 26px;font-size:13px;font-weight:700;color:var(--dgrey);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s;white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none}
+.tab-btn:hover{color:var(--blue);background:var(--pale)}
+.tab-btn.active{color:var(--blue);border-bottom-color:var(--blue);background:var(--pale)}
+.tab-content{display:none;padding:24px 28px 80px}
+.tab-content.active{display:block}
+
+/* ── CARDS ── */
+.card{background:#fff;border-radius:8px;box-shadow:0 1px 6px rgba(0,0,0,.1);margin-bottom:20px;overflow:hidden}
+.card-header{background:var(--blue);color:#fff;padding:13px 20px;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:space-between}
+.card-header .sub{font-size:11px;opacity:.75;margin-top:2px;font-weight:400}
+.card-body{padding:20px}
+
+/* ── FORM GRID ── */
+.field-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.field-grid.two{grid-template-columns:repeat(2,1fr)}
+.field-grid.four{grid-template-columns:repeat(4,1fr)}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.field input,.field select,.field textarea{width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:4px;font-size:13px;font-family:Arial;background:#fff}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--mid)}
+.field textarea{resize:vertical;min-height:52px}
+
+/* ── PROGRESS ── */
+.prog-bar-outer{background:#E0E7F0;border-radius:20px;height:22px;overflow:hidden;margin:10px 0 6px}
+.prog-bar-inner{height:100%;background:linear-gradient(90deg,var(--blue),var(--mid));border-radius:20px;transition:width .4s;display:flex;align-items:center;justify-content:flex-end;padding-right:10px;font-size:11px;color:#fff;font-weight:700;min-width:36px}
+.prog-stats{display:flex;gap:20px;font-size:12px;color:#555}
+.prog-stats strong{color:var(--blue)}
+.mod-chips{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+.chip{background:var(--grey);border-radius:4px;padding:6px 10px;font-size:11px;border-left:4px solid #ccc;cursor:pointer;transition:all .2s}
+.chip:hover{filter:brightness(.97)}
+.chip.done{background:var(--lgreen);border-left-color:var(--green)}
+.chip.inprog{background:#FFF8E1;border-left-color:var(--orange)}
+.chip .cn{font-weight:700}
+.chip .cp{color:#666;margin-top:1px}
+
+/* ── MODULE ACCORDION ── */
+.mod-card{background:#fff;border-radius:8px;box-shadow:0 1px 5px rgba(0,0,0,.09);margin-bottom:12px;overflow:hidden}
+.mod-hdr{background:var(--blue);color:#fff;padding:12px 18px;cursor:pointer;display:flex;align-items:center;gap:10px;user-select:none}
+.mod-hdr:hover{background:var(--mid)}
+.mod-hdr .num{background:rgba(255,255,255,.2);width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
+.mod-hdr .title{flex:1;font-size:14px;font-weight:700}
+.mod-hdr .prog{font-size:12px;opacity:.9}
+.mod-hdr .chev{font-size:16px;transition:transform .2s}
+.mod-hdr.open .chev{transform:rotate(180deg)}
+.badge-done{background:var(--green);color:#fff;font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px}
+.mod-body{display:none}
+.mod-body.open{display:block}
+
+.mod-meta{background:var(--pale);padding:12px 18px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;border-bottom:1px solid var(--light)}
+.mod-meta .field label{font-size:10px}
+.mod-meta .field input{padding:5px 8px;font-size:12px}
+
+.items-tbl{width:100%;border-collapse:collapse}
+.items-tbl th{background:var(--light);padding:7px 11px;text-align:left;font-size:11px;font-weight:700;color:var(--blue);border-bottom:2px solid var(--blue)}
+.items-tbl td{padding:7px 11px;border-bottom:1px solid #EEF0F4;font-size:13px;vertical-align:middle}
+.items-tbl tr:nth-child(even) td{background:var(--grey)}
+.items-tbl tr.ticked td{background:#F0FBF0 !important;color:#555}
+.items-tbl .n{color:#999;font-size:11px;width:36px}
+.items-tbl .dc{width:118px}
+.items-tbl .ti{width:88px}
+.items-tbl .ck{width:44px;text-align:center}
+.items-tbl input[type=checkbox]{width:18px;height:18px;cursor:pointer;accent-color:var(--green)}
+.items-tbl input[type=date],.items-tbl input[type=text]{padding:4px 6px;border:1px solid #ccc;border-radius:3px;font-size:12px;width:100%;font-family:Arial}
+
+.mod-foot{background:var(--pale);padding:12px 18px;border-top:2px solid var(--light);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.mod-foot label{font-size:11px;font-weight:700;color:var(--blue)}
+.mod-foot input{padding:5px 9px;border:1.5px solid var(--border);border-radius:4px;font-size:12px;font-family:Arial}
+.btn-signoff{background:var(--blue);color:#fff;border:none;padding:7px 16px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;margin-left:auto}
+.btn-signoff:hover{background:var(--mid)}
+.btn-signoff.done{background:var(--green)}
+
+/* ── FINAL AUTH ── */
+.auth-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:16px}
+.sig-box{background:var(--grey);border-radius:6px;padding:14px}
+.sig-box h4{font-size:12px;font-weight:700;color:var(--blue);margin-bottom:10px;padding-bottom:5px;border-bottom:2px solid var(--light)}
+.sig-box .field{margin-bottom:7px}
+.sig-box .field label{font-size:10px}
+.sig-box .field input{padding:5px 8px;font-size:12px}
+
+/* ── STAFF RECORDS TAB ── */
+.records-toolbar{display:flex;gap:10px;align-items:center;margin-bottom:18px;flex-wrap:wrap}
+.records-toolbar .search{flex:1;min-width:200px;padding:9px 13px;border:1.5px solid var(--border);border-radius:4px;font-size:13px;font-family:Arial}
+.rec-table{width:100%;border-collapse:collapse}
+.rec-table th{background:var(--blue);color:#fff;padding:9px 13px;text-align:left;font-size:12px;font-weight:700}
+.rec-table td{padding:9px 13px;border-bottom:1px solid #E8EDF5;font-size:13px;vertical-align:middle}
+.rec-table tr:nth-child(even) td{background:var(--grey)}
+.rec-table tr:hover td{background:var(--pale)}
+.rec-actions{display:flex;gap:6px}
+.btn-sm{padding:5px 11px;border-radius:3px;font-size:11px;font-weight:700;cursor:pointer;border:none}
+.btn-view{background:var(--blue);color:#fff}
+.btn-edit{background:var(--orange);color:#fff}
+.btn-export{background:var(--green);color:#fff}
+.btn-del{background:var(--red);color:#fff}
+.btn-sm:hover{filter:brightness(.9)}
+.pct-pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700}
+.pct-pill.p100{background:var(--lgreen);color:var(--green)}
+.pct-pill.p50{background:#FFF8E1;color:var(--orange)}
+.pct-pill.p0{background:var(--grey);color:#888}
+.empty-state{text-align:center;padding:60px 20px;color:#999}
+.empty-state .icon{font-size:48px;margin-bottom:12px}
+.empty-state p{font-size:14px}
+
+/* ── MODULE EDITOR TAB ── */
+.admin-gate{text-align:center;padding:60px 20px}
+.admin-gate h2{color:var(--blue);margin-bottom:12px}
+.admin-gate p{color:#666;margin-bottom:20px;font-size:13px}
+.admin-gate .pin-row{display:flex;gap:10px;justify-content:center;align-items:center;max-width:320px;margin:0 auto}
+.admin-gate input{flex:1;padding:10px 14px;border:2px solid var(--border);border-radius:4px;font-size:16px;letter-spacing:3px;font-family:Arial}
+.editor-mod{background:#fff;border-radius:8px;box-shadow:0 1px 5px rgba(0,0,0,.09);margin-bottom:14px;overflow:hidden}
+.editor-mod-hdr{background:var(--pale);border-left:4px solid var(--blue);padding:12px 16px;display:flex;align-items:center;gap:10px}
+.editor-mod-hdr input{flex:1;padding:6px 10px;border:1.5px solid var(--border);border-radius:4px;font-size:13px;font-weight:700;color:var(--blue);font-family:Arial}
+.editor-items{padding:12px 16px}
+.editor-item{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.editor-item input{flex:1;padding:6px 10px;border:1.5px solid var(--border);border-radius:4px;font-size:13px;font-family:Arial}
+.editor-item input:focus{outline:none;border-color:var(--mid)}
+.btn-icon{background:none;border:none;cursor:pointer;font-size:16px;padding:3px 6px;border-radius:3px}
+.btn-icon:hover{background:rgba(0,0,0,.07)}
+.btn-add-item{background:none;border:2px dashed var(--border);color:var(--dgrey);padding:6px 14px;border-radius:4px;font-size:12px;cursor:pointer;width:100%;margin-top:4px}
+.btn-add-item:hover{border-color:var(--mid);color:var(--mid)}
+.editor-footer{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+
+/* ── BUTTONS ── */
+.btn{padding:9px 20px;border-radius:4px;font-size:13px;font-weight:700;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:var(--mid)}
+.btn-success{background:var(--green);color:#fff}
+.btn-success:hover{filter:brightness(.95)}
+.btn-danger{background:var(--red);color:#fff}
+.btn-danger:hover{filter:brightness(.9)}
+.btn-ghost{background:transparent;border:2px solid var(--border);color:var(--text)}
+.btn-ghost:hover{border-color:var(--mid);color:var(--mid)}
+.btn-orange{background:var(--orange);color:#fff}
+
+/* ── ACTION BAR ── */
+.action-bar{background:var(--blue);position:fixed;bottom:0;left:0;right:0;padding:11px 28px;display:flex;align-items:center;justify-content:space-between;z-index:300;box-shadow:0 -2px 8px rgba(0,0,0,.2)}
+.action-bar .status{color:#fff;font-size:12px;opacity:.9}
+.action-bar .btns{display:flex;gap:10px}
+.action-bar button{padding:8px 18px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;border:none}
+.ab-save{background:var(--green);color:#fff}
+.ab-print{background:#fff;color:var(--blue)}
+.ab-save-rec{background:var(--orange);color:#fff}
+.ab-clear{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.3)!important}
+
+/* ── MODAL ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:center;justify-content:center}
+.modal-bg.show{display:flex}
+.modal{background:#fff;border-radius:10px;width:90%;max-width:520px;box-shadow:0 8px 32px rgba(0,0,0,.2);overflow:hidden}
+.modal-hdr{background:var(--blue);color:#fff;padding:16px 22px;font-size:15px;font-weight:700}
+.modal-body{padding:22px}
+.modal-body p{font-size:13px;color:#555;margin-bottom:16px}
+.modal-foot{padding:14px 22px;background:var(--grey);display:flex;justify-content:flex-end;gap:10px}
+
+/* ── TOAST ── */
+.toast{position:fixed;top:80px;right:24px;background:var(--green);color:#fff;padding:11px 18px;border-radius:6px;font-weight:700;font-size:13px;z-index:400;display:none;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+
+/* ── IMPORT AREA ── */
+.import-drop{border:2px dashed var(--border);border-radius:8px;padding:32px;text-align:center;cursor:pointer;transition:all .2s}
+.import-drop:hover{border-color:var(--mid);background:var(--pale)}
+.import-drop p{color:#888;font-size:13px;margin-top:8px}
+
+@media print{.topbar,.tab-nav,.action-bar,.topbar-right,.records-toolbar{display:none!important}.tab-content{display:block!important;padding:0}.mod-body{display:block!important}body{background:#fff}}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="sub">TRN-SOF-001 | v2.0 | June 2026 — Vortex Contracting Ltd</div>
+    <h1>Hydro Operator Training Sign-Off Tracker</h1>
+  </div>
+  <div class="topbar-right">
+    <button onclick="window.print()">🖨 Print</button>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="showTab('form')">📋 Training Form</button>
+  <button class="tab-btn" onclick="showTab('records')">👥 Staff Records</button>
+  <button class="tab-btn" onclick="showTab('editor')">⚙️ Module Editor</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════════════════════════════════
+     TAB 1 — TRAINING FORM
+══════════════════════════════════════════ -->
+<div class="tab-content active" id="tab-form">
+
+  <!-- Employee Info -->
+  <div class="card">
+    <div class="card-header">Employee Information
+      <div class="sub">Fill in before starting the form</div>
+    </div>
+    <div class="card-body">
+      <div class="field-grid">
+        <div class="field"><label>Employee Full Name</label><input id="emp-name" type="text" placeholder="Full name" oninput="autoSave()"></div>
+        <div class="field"><label>Employee ID / Staff No.</label><input id="emp-id" type="text" placeholder="e.g. VX-012" oninput="autoSave()"></div>
+        <div class="field"><label>Position</label><input id="emp-pos" type="text" value="Hydro / Flushing Truck Operator" oninput="autoSave()"></div>
+        <div class="field"><label>Start Date</label><input id="emp-start" type="date" oninput="autoSave()"></div>
+        <div class="field"><label>Primary Trainer</label><input id="trainer-name" type="text" placeholder="Trainer name" oninput="autoSave()"></div>
+        <div class="field"><label>Region / Base</label><input id="emp-region" type="text" placeholder="e.g. Christchurch" oninput="autoSave()"></div>
+        <div class="field"><label>NZTA Licence Class</label><input id="emp-lic" type="text" placeholder="e.g. Class 5" oninput="autoSave()"></div>
+        <div class="field"><label>Licence Number</label><input id="emp-licno" type="text" oninput="autoSave()"></div>
+        <div class="field"><label>Licence Expiry Date</label><input id="emp-licexp" type="date" oninput="autoSave()"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="card">
+    <div class="card-header">Overall Training Progress</div>
+    <div class="card-body">
+      <div class="prog-bar-outer"><div class="prog-bar-inner" id="prog-bar" style="width:0%">0%</div></div>
+      <div class="prog-stats">
+        <span><strong id="p-done">0</strong> items completed</span>
+        <span>of <strong id="p-total">0</strong> total</span>
+        <span><strong id="p-mods">0</strong> / <strong id="p-modtotal">0</strong> modules signed off</span>
+      </div>
+      <div class="mod-chips" id="mod-chips"></div>
+    </div>
+  </div>
+
+  <!-- Modules -->
+  <div id="modules-area"></div>
+
+  <!-- Final Auth -->
+  <div class="card">
+    <div class="card-header">Final Authorisation — Independent Operation</div>
+    <div class="card-body">
+      <div class="field-grid">
+        <div class="field"><label>All Modules Completed?</label>
+          <select id="all-complete" oninput="autoSave()"><option value="">-- Select --</option><option>Yes</option><option>No</option></select></div>
+        <div class="field"><label>Date All Modules Complete</label><input id="complete-date" type="date" oninput="autoSave()"></div>
+        <div class="field"><label>Total Training Hours</label><input id="total-hours" type="number" placeholder="e.g. 42" oninput="autoSave()"></div>
+        <div class="field"><label>Additional Training Required?</label>
+          <select id="add-training" oninput="autoSave()"><option value="">-- Select --</option><option>Yes</option><option>No</option></select></div>
+        <div class="field"><label>Additional Training Details</label><input id="add-details" type="text" placeholder="If yes, describe" oninput="autoSave()"></div>
+        <div class="field"><label>Authorised for Independent Operation?</label>
+          <select id="authorised" oninput="autoSave()"><option value="">-- Select --</option><option value="YES">YES ✔</option><option value="NO">NO — Further Training Required</option></select></div>
+        <div class="field"><label>Authorisation Effective Date</label><input id="auth-date" type="date" oninput="autoSave()"></div>
+        <div class="field" style="grid-column:span 2"><label>Manager Notes</label><textarea id="mgr-notes" oninput="autoSave()" placeholder="Any final notes..."></textarea></div>
+      </div>
+
+      <div class="auth-grid">
+        <div class="sig-box">
+          <h4>Trainer Sign-Off</h4>
+          <div class="field"><label>Name</label><input id="sig-t-name" type="text" oninput="autoSave()"></div>
+          <div class="field"><label>Signature (type name)</label><input id="sig-t-sig" type="text" placeholder="Type full name" style="font-style:italic" oninput="autoSave()"></div>
+          <div class="field"><label>Date</label><input id="sig-t-date" type="date" oninput="autoSave()"></div>
+        </div>
+        <div class="sig-box">
+          <h4>Employee Sign-Off</h4>
+          <div class="field"><label>Name</label><input id="sig-e-name" type="text" oninput="autoSave()"></div>
+          <div class="field"><label>Signature (type name)</label><input id="sig-e-sig" type="text" placeholder="Type full name" style="font-style:italic" oninput="autoSave()"></div>
+          <div class="field"><label>Date</label><input id="sig-e-date" type="date" oninput="autoSave()"></div>
+        </div>
+        <div class="sig-box">
+          <h4>Operations Manager</h4>
+          <div class="field"><label>Name</label><input id="sig-o-name" type="text" placeholder="Cameron Fredrickson" oninput="autoSave()"></div>
+          <div class="field"><label>Signature (type name)</label><input id="sig-o-sig" type="text" placeholder="Type full name" style="font-style:italic" oninput="autoSave()"></div>
+          <div class="field"><label>Date</label><input id="sig-o-date" type="date" oninput="autoSave()"></div>
+        </div>
+        <div class="sig-box">
+          <h4>Director / HR Manager</h4>
+          <div class="field"><label>Name</label><input id="sig-d-name" type="text" oninput="autoSave()"></div>
+          <div class="field"><label>Signature (type name)</label><input id="sig-d-sig" type="text" placeholder="Type full name" style="font-style:italic" oninput="autoSave()"></div>
+          <div class="field"><label>Date</label><input id="sig-d-date" type="date" oninput="autoSave()"></div>
+        </div>
+      </div>
+      <p style="margin-top:14px;font-size:11px;color:#999;text-align:center">This signed record must be filed in the employee's HR file on Connecteam. Vortex Contracting Ltd | TRN-SOF-001 | v2.0 | June 2026</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TAB 2 — STAFF RECORDS
+══════════════════════════════════════════ -->
+<div class="tab-content" id="tab-records">
+  <div class="card">
+    <div class="card-header">Staff Training Records
+      <div class="sub">Saved records on this device</div>
+    </div>
+    <div class="card-body">
+      <div class="records-toolbar">
+        <input class="search" type="text" id="rec-search" placeholder="🔍 Search by name, region, or status…" oninput="renderRecords()">
+        <button class="btn btn-primary" onclick="saveCurrentAsRecord()">💾 Save Current Form as Record</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('import-input').click()">📂 Import Record (JSON)</button>
+        <input type="file" id="import-input" accept=".json" style="display:none" onchange="importRecord(event)">
+      </div>
+      <div id="records-area"></div>
+    </div>
+  </div>
+
+  <!-- Import drop area -->
+  <div class="card">
+    <div class="card-header">Import a Record</div>
+    <div class="card-body">
+      <div class="import-drop" onclick="document.getElementById('import-input2').click()">
+        <div style="font-size:36px">📁</div>
+        <strong>Click to import a JSON record file</strong>
+        <p>Records exported from another device or sent by email can be imported here</p>
+      </div>
+      <input type="file" id="import-input2" accept=".json" style="display:none" onchange="importRecord(event)">
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TAB 3 — MODULE EDITOR
+══════════════════════════════════════════ -->
+<div class="tab-content" id="tab-editor">
+  <div id="editor-gate">
+    <div class="card">
+      <div class="card-header">Module Editor — Admin Access</div>
+      <div class="card-body">
+        <div class="admin-gate">
+          <h2>🔒 Admin Access Required</h2>
+          <p>The Module Editor lets you customise training modules and competency items.<br>Enter the admin PIN to continue.</p>
+          <div class="pin-row">
+            <input type="password" id="pin-input" placeholder="Enter PIN" onkeydown="if(event.key==='Enter')checkPin()">
+            <button class="btn btn-primary" onclick="checkPin()">Unlock</button>
+          </div>
+          <p style="margin-top:12px;font-size:12px;color:#999">Default PIN: <strong>vortex2026</strong> — change this after first login</p>
+          <p id="pin-err" style="color:var(--red);font-size:13px;margin-top:8px;display:none">Incorrect PIN. Try again.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="editor-area" style="display:none">
+    <div class="card">
+      <div class="card-header">Module Editor
+        <div class="sub">Add, edit, or remove modules and competency items. Changes apply to new Training Forms immediately.</div>
+      </div>
+      <div class="card-body">
+        <div id="editor-modules-list"></div>
+        <div class="editor-footer">
+          <button class="btn btn-primary" onclick="addModule()">➕ Add New Module</button>
+          <button class="btn btn-success" onclick="saveModules()">💾 Save All Changes</button>
+          <button class="btn btn-danger" onclick="resetModules()">↩ Reset to Defaults</button>
+          <button class="btn btn-ghost" style="margin-left:auto" onclick="lockEditor()">🔒 Lock Editor</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PIN Change -->
+    <div class="card">
+      <div class="card-header">Change Admin PIN</div>
+      <div class="card-body">
+        <div class="field-grid two">
+          <div class="field"><label>New PIN</label><input id="new-pin" type="password" placeholder="Enter new PIN"></div>
+          <div class="field"><label>Confirm New PIN</label><input id="new-pin2" type="password" placeholder="Confirm new PIN"></div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:12px" onclick="changePin()">Update PIN</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ACTION BAR -->
+<div class="action-bar">
+  <div class="status" id="save-status">Ready</div>
+  <div class="btns">
+    <button class="ab-clear" onclick="confirmClear()">🗑 Clear Form</button>
+    <button class="ab-save-rec" onclick="saveCurrentAsRecord()">💾 Save as Record</button>
+    <button class="ab-print" onclick="window.print()">🖨 Print / PDF</button>
+    <button class="ab-save" onclick="manualSave()">✔ Save Progress</button>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <div class="modal-hdr" id="modal-title">Confirm</div>
+    <div class="modal-body"><p id="modal-msg"></p><div id="modal-extra"></div></div>
+    <div class="modal-foot" id="modal-foot"></div>
+  </div>
+</div>
+
+<div style="height:60px"></div>
+
+<script>
+// ═══════════════════════════════════════
+// DEFAULT MODULES
+// ═══════════════════════════════════════
+const DEFAULT_MODULES = [
+  { num:1, name:"Driving — General Road Operation", items:[
+    "Holds correct NZTA licence class for vehicle being operated",
+    "Seatbelt worn at all times — confirmed",
+    "Zero-alcohol standard understood and acknowledged",
+    "No mobile phone use while driving — confirmed",
+    "Safe road driving observed (minimum 4 hours) — notes in vWork",
+    "Heavy vehicle following distances and braking distances understood",
+    "Wide turns and cornering technique — observed on road",
+    "Reversing — walkaround procedure performed before every reverse",
+    "Adverse weather driving — discussed and understood",
+    "Fatigue management obligations understood",
+    "Boom secured for road travel — demonstrated"
+  ]},
+  { num:2, name:"Pre-Start Inspection", items:[
+    "Cab check — mirrors, seatbelt, dashboard warning lights",
+    "Exterior walkaround — tyres, lights, fluid leaks, doors/hatches",
+    "Hydro equipment — boom, hoses, vacuum tank, high-pressure pump",
+    "Remote control — charged, paired, all functions operational",
+    "Defect recording in vWork — demonstrated by trainee",
+    "Critical defect rule understood: no operation until repaired"
+  ]},
+  { num:3, name:"Client Interaction and Communication", items:[
+    "Introduces self to client or site contact on arrival",
+    "Confirms scope of work before commencing",
+    "Identifies site-specific hazards with client",
+    "Professional communication standards demonstrated",
+    "Job completion confirmed with client before leaving site",
+    "vWork job records completed correctly and promptly"
+  ]},
+  { num:4, name:"Digital Systems — vWork / Connecteam / iPayroll", items:[
+    "Logs in to vWork independently, views job schedule",
+    "Accepts, updates, and completes a job in vWork",
+    "Captures photos and job notes in vWork",
+    "Clocks on/off in Connecteam correctly each shift",
+    "iPayroll — can view payslip and submit leave"
+  ]},
+  { num:5, name:"Hydro Excavation — Supervised Operation", items:[
+    "Utility locating requirements understood — no digging on unlocated services",
+    "Water pressure control — starts low, increases appropriately",
+    "High-pressure water hazards understood — injection injury risk confirmed",
+    "Two-handed lance control — demonstrated",
+    "Vacuum operations — connections secure, fill levels monitored",
+    "Boom — clearances checked above and around before every movement",
+    "Overhead powerline exclusion zones understood (min. 4m)",
+    "Spoil management and approved disposal site requirements understood",
+    "Full PPE worn throughout — face shield, ear protection, gloves, hi-vis, boots",
+    "JSEA completed before commencing job — demonstrated independently"
+  ]},
+  { num:6, name:"Remote Control Operations", items:[
+    "Remote control setup and pairing — demonstrated",
+    "All remote functions tested before commencing work",
+    "Line of sight maintained with truck during remote operation",
+    "Emergency stop function tested and confirmed",
+    "Remote fault response — safe shutdown procedure demonstrated"
+  ]},
+  { num:7, name:"Emptying the Hydro Truck", items:[
+    "Truck on stable, level ground before emptying — confirmed",
+    "Personnel cleared from discharge zone",
+    "Valves opened/closed correctly — no spillage observed",
+    "Approved disposal site confirmed with manager",
+    "Volumes recorded accurately in vWork",
+    "Wash-down completed after emptying"
+  ]},
+  { num:8, name:"Maintenance and Servicing", items:[
+    "Daily fluid checks — oil, coolant, hydraulic fluid, fuel",
+    "Hose and seal inspection — can identify wear and damage",
+    "Boom lubrication and inspection points identified",
+    "Hydraulic system basics understood — no DIY repairs",
+    "Hydraulic leak reporting procedure understood",
+    "Pneumatic/vacuum system basics understood",
+    "Weekly maintenance tasks discussed and documented"
+  ]},
+  { num:9, name:"Basic Hand Tools and Equipment", items:[
+    "Correct tool selection for each task — demonstrated",
+    "Safe tool use — no damaged tools used during training",
+    "Tools cleaned and stored correctly after every use",
+    "Cable locating wands — correct use demonstrated"
+  ]},
+  { num:10, name:"Hydro Truck Cleaning Procedures", items:[
+    "Hoses and lines flushed after each job",
+    "External truck surfaces cleaned before road travel",
+    "Wash pad used at yard before parking",
+    "Biosecurity cleaning requirements understood for inter-regional travel"
+  ]},
+  { num:11, name:"Hydraulics, Pneumatics and Problem Solving", items:[
+    "Hydraulic oil daily check demonstrated — normal vs. abnormal identified",
+    "Vacuum system basics — weak suction causes can be diagnosed",
+    "Common problems and solutions reviewed with trainer",
+    "Escalation vs. self-resolve judgement understood",
+    "Will not operate equipment believed to be unsafe — confirmed"
+  ]},
+  { num:12, name:"PPE, JSEA and Hazard Awareness", items:[
+    "Full PPE kit issued and correct use demonstrated",
+    "Hard hat, hi-vis, safety glasses, hearing protection worn correctly",
+    "JSEA process — can complete and brief team independently",
+    "Site hazards identified — flying debris, slip, trip, noise",
+    "Confined space rule: NEVER enter without permit and gas testing",
+    "Overhead powerline rule: 4m minimum exclusion zone",
+    "Biological hazard awareness (wastewater) — PPE and hygiene protocols"
+  ]}
+];
+
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let MODULES = loadModules();
+let adminUnlocked = false;
+const ADMIN_PIN_KEY = 'vortex-admin-pin';
+const MODULES_KEY  = 'vortex-modules-v2';
+const FORM_KEY     = 'vortex-form-v2';
+const RECORDS_KEY  = 'vortex-records-v2';
+
+function loadModules() {
+  try { const m = JSON.parse(localStorage.getItem(MODULES_KEY)); if(m&&m.length) return m; } catch(e){}
+  return JSON.parse(JSON.stringify(DEFAULT_MODULES));
+}
+function getPin() { return localStorage.getItem(ADMIN_PIN_KEY) || 'vortex2026'; }
+
+// ═══════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════
+function showTab(id) {
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  event.target.classList.add('active');
+  if(id==='records') renderRecords();
+  if(id==='editor') renderEditor();
+}
+
+// ═══════════════════════════════════════
+// BUILD FORM MODULES
+// ═══════════════════════════════════════
+function buildFormModules() {
+  const area = document.getElementById('modules-area');
+  const chips = document.getElementById('mod-chips');
+  area.innerHTML = '';
+  chips.innerHTML = '';
+  document.getElementById('p-modtotal').textContent = MODULES.length;
+
+  MODULES.forEach(mod => {
+    // Chip
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.id = 'chip-'+mod.num;
+    chip.innerHTML = `<div class="cn">MOD ${mod.num}: ${mod.name.substring(0,28)}${mod.name.length>28?'…':''}</div><div class="cp" id="chip-p-${mod.num}">0%</div>`;
+    chip.onclick = () => { document.getElementById('mod-'+mod.num).scrollIntoView({behavior:'smooth'}); openMod(mod.num); };
+    chips.appendChild(chip);
+
+    // Card
+    const card = document.createElement('div');
+    card.className = 'mod-card';
+    card.id = 'mod-'+mod.num;
+    card.innerHTML = `
+      <div class="mod-hdr" id="mhdr-${mod.num}" onclick="toggleMod(${mod.num})">
+        <div class="num">${mod.num}</div>
+        <div class="title">Module ${mod.num}: ${mod.name}</div>
+        <div class="prog" id="mprog-${mod.num}">0 / ${mod.items.length}</div>
+        <span class="chev">▾</span>
+      </div>
+      <div class="mod-body" id="mbody-${mod.num}">
+        <div class="mod-meta">
+          <div class="field"><label>Date Completed</label><input type="date" id="mdate-${mod.num}" oninput="autoSave()"></div>
+          <div class="field"><label>Total Hours</label><input type="number" id="mhrs-${mod.num}" placeholder="e.g. 4" oninput="autoSave()"></div>
+          <div class="field"><label>Trainer Name</label><input type="text" id="mtrainer-${mod.num}" placeholder="Name" oninput="autoSave()"></div>
+          <div class="field"><label>Trainer Notes</label><input type="text" id="mnotes-${mod.num}" placeholder="Optional notes" oninput="autoSave()"></div>
+        </div>
+        <table class="items-tbl">
+          <thead><tr>
+            <th class="n">#</th>
+            <th>Competency / Learning Item</th>
+            <th class="dc">Date Confirmed</th>
+            <th class="ti">Trainer Initials</th>
+            <th class="ck">✔</th>
+          </tr></thead>
+          <tbody>
+            ${mod.items.map((item,i)=>`
+              <tr id="irow-${mod.num}-${i}">
+                <td class="n">${mod.num}.${i+1}</td>
+                <td>${item}</td>
+                <td class="dc"><input type="date" id="idate-${mod.num}-${i}" oninput="autoSave()"></td>
+                <td class="ti"><input type="text" id="itrain-${mod.num}-${i}" placeholder="Initials" maxlength="10" oninput="autoSave()"></td>
+                <td class="ck"><input type="checkbox" id="icb-${mod.num}-${i}" onchange="itemTick(${mod.num},${i})"></td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+        <div class="mod-foot">
+          <label>Manager Initials:</label>
+          <input type="text" id="mmgr-${mod.num}" placeholder="Initials" style="width:90px" oninput="autoSave()">
+          <label>Sign-Off Date:</label>
+          <input type="date" id="msod-${mod.num}" oninput="autoSave()">
+          <button class="btn-signoff" id="mso-${mod.num}" onclick="signOffMod(${mod.num})">Mark Complete</button>
+        </div>
+      </div>`;
+    area.appendChild(card);
+  });
+}
+
+function toggleMod(n) {
+  const body=document.getElementById('mbody-'+n), hdr=document.getElementById('mhdr-'+n);
+  body.classList.toggle('open'); hdr.classList.toggle('open');
+}
+function openMod(n) {
+  const body=document.getElementById('mbody-'+n), hdr=document.getElementById('mhdr-'+n);
+  body.classList.add('open'); hdr.classList.add('open');
+}
+
+function itemTick(modNum, idx) {
+  const cb = document.getElementById('icb-'+modNum+'-'+idx);
+  const row = document.getElementById('irow-'+modNum+'-'+idx);
+  row.classList.toggle('ticked', cb.checked);
+  const df = document.getElementById('idate-'+modNum+'-'+idx);
+  if(cb.checked && !df.value) df.value = today();
+  updateProgress(); autoSave();
+}
+
+function signOffMod(n) {
+  const allDone = MODULES.find(m=>m.num===n).items.every((_,i)=>document.getElementById('icb-'+n+'-'+i)?.checked);
+  const go = () => {
+    const df = document.getElementById('msod-'+n);
+    if(!df.value) df.value = today();
+    const btn = document.getElementById('mso-'+n);
+    btn.textContent = '✔ Signed Off';
+    btn.classList.add('done');
+    updateProgress(); autoSave();
+  };
+  if(!allDone) {
+    showModal('Sign Off Module '+n+'?','Not all items are ticked. Sign off anyway?',[
+      {label:'Sign Off Anyway',cls:'btn btn-success',fn:()=>{closeModal();go()}},
+      {label:'Cancel',cls:'btn btn-ghost',fn:closeModal}
+    ]);
+  } else { go(); }
+}
+
+function updateProgress() {
+  let total=0, done=0, mods=0;
+  MODULES.forEach(mod => {
+    let md=0;
+    mod.items.forEach((_,i)=>{ total++; if(document.getElementById('icb-'+mod.num+'-'+i)?.checked){done++;md++;} });
+    const pct=Math.round(md/mod.items.length*100);
+    const chip=document.getElementById('chip-'+mod.num);
+    const pp=document.getElementById('chip-p-'+mod.num);
+    const mp=document.getElementById('mprog-'+mod.num);
+    if(pp) pp.textContent=pct+'%';
+    if(mp) mp.textContent=md+' / '+mod.items.length;
+    const so=document.getElementById('mso-'+mod.num);
+    const isComplete=so?.classList.contains('done');
+    if(chip){ chip.classList.remove('done','inprog'); if(isComplete){chip.classList.add('done');mods++;}else if(md>0)chip.classList.add('inprog'); }
+  });
+  const pct=total?Math.round(done/total*100):0;
+  const bar=document.getElementById('prog-bar');
+  if(bar){bar.style.width=pct+'%';bar.textContent=pct+'%';}
+  const el=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  el('p-done',done); el('p-total',total); el('p-mods',mods);
+}
+
+// ═══════════════════════════════════════
+// SAVE / LOAD FORM
+// ═══════════════════════════════════════
+function collectFormData() {
+  const d={};
+  const ids=['emp-name','emp-id','emp-pos','emp-start','trainer-name','emp-region','emp-lic','emp-licno','emp-licexp',
+    'all-complete','complete-date','total-hours','add-training','add-details','authorised','auth-date','mgr-notes',
+    'sig-t-name','sig-t-sig','sig-t-date','sig-e-name','sig-e-sig','sig-e-date','sig-o-name','sig-o-sig','sig-o-date','sig-d-name','sig-d-sig','sig-d-date'];
+  ids.forEach(id=>{ const e=document.getElementById(id); if(e) d[id]=e.value; });
+  MODULES.forEach(mod=>{
+    ['date','hrs','trainer','notes','mgr','sod'].forEach(f=>{ const e=document.getElementById('m'+f+'-'+mod.num); if(e) d['m'+f+'-'+mod.num]=e.value; });
+    const so=document.getElementById('mso-'+mod.num); if(so) d['mso-'+mod.num]=so.classList.contains('done');
+    mod.items.forEach((_,i)=>{
+      ['date','train'].forEach(f=>{ const e=document.getElementById('i'+f+'-'+mod.num+'-'+i); if(e) d['i'+f+'-'+mod.num+'-'+i]=e.value; });
+      const cb=document.getElementById('icb-'+mod.num+'-'+i); if(cb) d['icb-'+mod.num+'-'+i]=cb.checked;
+    });
+  });
+  d._savedAt = new Date().toISOString();
+  d._modules = JSON.parse(JSON.stringify(MODULES));
+  return d;
+}
+
+function applyFormData(d) {
+  if(!d) return;
+  Object.entries(d).forEach(([id,val])=>{
+    if(id.startsWith('icb-')){ const e=document.getElementById(id); if(e){e.checked=val; const parts=id.replace('icb-','').split('-'); const row=document.getElementById('irow-'+parts[0]+'-'+parts[1]); if(row)row.classList.toggle('ticked',val);} }
+    else if(id.startsWith('mso-')){ if(val){ const btn=document.getElementById(id); if(btn){btn.textContent='✔ Signed Off';btn.classList.add('done');} } }
+    else if(!id.startsWith('_')){ const e=document.getElementById(id); if(e) e.value=val; }
+  });
+  updateProgress();
+}
+
+function autoSave() {
+  localStorage.setItem(FORM_KEY, JSON.stringify(collectFormData()));
+  document.getElementById('save-status').textContent = 'Auto-saved '+new Date().toLocaleTimeString();
+}
+
+function manualSave() {
+  autoSave();
+  showToast('✔ Progress saved!');
+}
+
+function loadSavedForm() {
+  try { const d=JSON.parse(localStorage.getItem(FORM_KEY)); if(d) applyFormData(d); } catch(e){}
+}
+
+function confirmClear() {
+  showModal('Clear Form?','This will clear all data in the current Training Form. Make sure you have saved it as a record first if you need to keep it.',[
+    {label:'Clear Form',cls:'btn btn-danger',fn:()=>{ localStorage.removeItem(FORM_KEY); location.reload(); closeModal(); }},
+    {label:'Cancel',cls:'btn btn-ghost',fn:closeModal}
+  ]);
+}
+
+// ═══════════════════════════════════════
+// STAFF RECORDS
+// ═══════════════════════════════════════
+function getRecords() { try { return JSON.parse(localStorage.getItem(RECORDS_KEY))||[]; } catch(e){ return []; } }
+function setRecords(r) { localStorage.setItem(RECORDS_KEY, JSON.stringify(r)); }
+
+function saveCurrentAsRecord() {
+  const name = document.getElementById('emp-name')?.value?.trim();
+  if(!name){ showToast('⚠️ Please enter the employee name first'); return; }
+  const data = collectFormData();
+  const pct = calcPct(data);
+  const auth = data['authorised']||'';
+
+  const records = getRecords();
+  const existingIdx = records.findIndex(r=>r.empId===data['emp-id']&&r.empName===name);
+
+  const record = {
+    id: existingIdx>=0 ? records[existingIdx].id : Date.now().toString(),
+    empName: name,
+    empId: data['emp-id']||'',
+    region: data['emp-region']||'',
+    startDate: data['emp-start']||'',
+    trainer: data['trainer-name']||'',
+    pct,
+    auth,
+    savedAt: new Date().toISOString(),
+    data
+  };
+
+  if(existingIdx>=0){
+    showModal('Update Existing Record?',`A record for "${name}" already exists. Update it with the current form data?`,[
+      {label:'Update Record',cls:'btn btn-success',fn:()=>{ records[existingIdx]=record; setRecords(records); closeModal(); renderRecords(); showToast('✔ Record updated for '+name); }},
+      {label:'Save as New',cls:'btn btn-primary',fn:()=>{ record.id=Date.now().toString(); records.push(record); setRecords(records); closeModal(); renderRecords(); showToast('✔ New record saved for '+name); }},
+      {label:'Cancel',cls:'btn btn-ghost',fn:closeModal}
+    ]);
+  } else {
+    records.push(record);
+    setRecords(records);
+    renderRecords();
+    showToast('✔ Record saved for '+name);
+  }
+}
+
+function calcPct(d) {
+  let total=0,done=0;
+  (d._modules||MODULES).forEach(mod=>{
+    mod.items.forEach((_,i)=>{ total++; if(d['icb-'+mod.num+'-'+i]) done++; });
+  });
+  return total ? Math.round(done/total*100) : 0;
+}
+
+function renderRecords() {
+  const q = (document.getElementById('rec-search')?.value||'').toLowerCase();
+  const records = getRecords().filter(r=>
+    !q || r.empName.toLowerCase().includes(q) || (r.region||'').toLowerCase().includes(q) || (r.auth||'').toLowerCase().includes(q)
+  );
+  const area = document.getElementById('records-area');
+  if(!records.length){
+    area.innerHTML=`<div class="empty-state"><div class="icon">📂</div><p>${q?'No records match your search.':'No records saved yet. Fill in a Training Form and click "Save as Record".'}</p></div>`;
+    return;
+  }
+  const rows = records.map((r,i)=>{
+    const pctCls = r.pct===100?'p100':r.pct>0?'p50':'p0';
+    const authBadge = r.auth==='YES' ? '<span style="color:var(--green);font-weight:700">✔ Authorised</span>' : r.auth==='NO'?'<span style="color:var(--red)">✗ Not yet</span>':'—';
+    return `<tr>
+      <td><strong>${r.empName}</strong></td>
+      <td>${r.empId||'—'}</td>
+      <td>${r.region||'—'}</td>
+      <td>${r.trainer||'—'}</td>
+      <td>${r.startDate||'—'}</td>
+      <td><span class="pct-pill ${pctCls}">${r.pct}%</span></td>
+      <td>${authBadge}</td>
+      <td>${new Date(r.savedAt).toLocaleDateString('en-NZ')}</td>
+      <td><div class="rec-actions">
+        <button class="btn-sm btn-view" onclick="loadRecord('${r.id}')">Load</button>
+        <button class="btn-sm btn-export" onclick="exportRecord('${r.id}')">Export</button>
+        <button class="btn-sm btn-del" onclick="deleteRecord('${r.id}')">Delete</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+  area.innerHTML=`
+    <table class="rec-table">
+      <thead><tr>
+        <th>Name</th><th>ID</th><th>Region</th><th>Trainer</th><th>Start Date</th><th>Progress</th><th>Authorised</th><th>Last Saved</th><th>Actions</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <p style="margin-top:10px;font-size:12px;color:#999">${records.length} record${records.length!==1?'s':''} on this device. Use Export to share or back up records as JSON files.</p>`;
+}
+
+function loadRecord(id) {
+  const rec = getRecords().find(r=>r.id===id);
+  if(!rec) return;
+  showModal('Load Record',`Load the record for "${rec.empName}"? The current form will be overwritten.`,[
+    {label:'Load Record',cls:'btn btn-primary',fn:()=>{
+      closeModal();
+      // Rebuild modules from record's module snapshot if available
+      if(rec.data._modules){ MODULES=rec.data._modules; buildFormModules(); }
+      applyFormData(rec.data);
+      showTab_direct('form');
+      showToast('✔ Loaded record: '+rec.empName);
+    }},
+    {label:'Cancel',cls:'btn btn-ghost',fn:closeModal}
+  ]);
+}
+
+function deleteRecord(id) {
+  const rec = getRecords().find(r=>r.id===id);
+  if(!rec) return;
+  showModal('Delete Record',`Permanently delete the record for "${rec.empName}"? This cannot be undone.`,[
+    {label:'Delete',cls:'btn btn-danger',fn:()=>{ const r=getRecords().filter(x=>x.id!==id); setRecords(r); closeModal(); renderRecords(); showToast('Record deleted'); }},
+    {label:'Cancel',cls:'btn btn-ghost',fn:closeModal}
+  ]);
+}
+
+function exportRecord(id) {
+  const rec = getRecords().find(r=>r.id===id);
+  if(!rec) return;
+  const blob = new Blob([JSON.stringify(rec, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Vortex_Training_${rec.empName.replace(/\s+/g,'_')}_${new Date(rec.savedAt).toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✔ Exported: '+rec.empName);
+}
+
+function importRecord(evt) {
+  const file = evt.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const rec = JSON.parse(e.target.result);
+      if(!rec.empName||!rec.data) throw new Error('Invalid format');
+      const records = getRecords();
+      const existing = records.findIndex(r=>r.id===rec.id);
+      if(existing>=0){
+        showModal('Record Already Exists',`A record with this ID already exists for "${records[existing].empName}". Replace it?`,[
+          {label:'Replace',cls:'btn btn-orange',fn:()=>{ records[existing]=rec; setRecords(records); closeModal(); renderRecords(); showToast('✔ Record imported: '+rec.empName); }},
+          {label:'Keep Both',cls:'btn btn-primary',fn:()=>{ rec.id=Date.now().toString(); records.push(rec); setRecords(records); closeModal(); renderRecords(); showToast('✔ Record imported: '+rec.empName); }},
+          {label:'Cancel',cls:'btn btn-ghost',fn:closeModal}
+        ]);
+      } else {
+        records.push(rec);
+        setRecords(records);
+        renderRecords();
+        showToast('✔ Record imported: '+rec.empName);
+      }
+    } catch(err){ showToast('⚠️ Invalid file. Make sure it is a Vortex JSON record.'); }
+  };
+  reader.readAsText(file);
+  evt.target.value='';
+}
+
+// ═══════════════════════════════════════
+// MODULE EDITOR
+// ═══════════════════════════════════════
+function checkPin() {
+  const input = document.getElementById('pin-input').value;
+  if(input===getPin()){
+    adminUnlocked=true;
+    document.getElementById('editor-gate').style.display='none';
+    document.getElementById('editor-area').style.display='block';
+    renderEditor();
+  } else {
+    document.getElementById('pin-err').style.display='block';
+    document.getElementById('pin-input').value='';
+  }
+}
+
+function lockEditor() {
+  adminUnlocked=false;
+  document.getElementById('editor-gate').style.display='block';
+  document.getElementById('editor-area').style.display='none';
+  document.getElementById('pin-input').value='';
+  document.getElementById('pin-err').style.display='none';
+}
+
+function renderEditor() {
+  if(!adminUnlocked) return;
+  const el = document.getElementById('editor-modules-list');
+  el.innerHTML='';
+  MODULES.forEach((mod,mi)=>{
+    const div=document.createElement('div');
+    div.className='editor-mod';
+    div.id='emod-'+mod.num;
+    div.innerHTML=`
+      <div class="editor-mod-hdr">
+        <span style="font-weight:700;color:var(--blue);margin-right:8px;min-width:28px">M${mod.num}</span>
+        <input type="text" value="${escHtml(mod.name)}" id="emod-name-${mod.num}" placeholder="Module name">
+        <button class="btn-icon" title="Move up" onclick="moveModule(${mi},-1)">⬆</button>
+        <button class="btn-icon" title="Move down" onclick="moveModule(${mi},1)">⬇</button>
+        <button class="btn-icon" title="Delete module" onclick="deleteModule(${mi})" style="color:var(--red)">🗑</button>
+      </div>
+      <div class="editor-items" id="eitems-${mod.num}">
+        ${mod.items.map((item,ii)=>`
+          <div class="editor-item" id="eitem-${mod.num}-${ii}">
+            <span style="font-size:11px;color:#999;min-width:28px">${mod.num}.${ii+1}</span>
+            <input type="text" value="${escHtml(item)}" id="eitem-input-${mod.num}-${ii}" placeholder="Competency item">
+            <button class="btn-icon" onclick="moveItem(${mi},${ii},-1)" title="Move up">⬆</button>
+            <button class="btn-icon" onclick="moveItem(${mi},${ii},1)" title="Move down">⬇</button>
+            <button class="btn-icon" onclick="deleteItem(${mi},${ii})" style="color:var(--red)" title="Delete">🗑</button>
+          </div>`).join('')}
+        <button class="btn-add-item" onclick="addItem(${mi})">+ Add competency item</button>
+      </div>`;
+    el.appendChild(div);
+  });
+}
+
+function addModule() {
+  const num = MODULES.length ? Math.max(...MODULES.map(m=>m.num))+1 : 1;
+  MODULES.push({num, name:'New Module', items:['New competency item']});
+  renderEditor();
+}
+
+function deleteModule(mi) {
+  showModal('Delete Module?',`Delete "${MODULES[mi].name}" and all its items?`,[
+    {label:'Delete',cls:'btn btn-danger',fn:()=>{ MODULES.splice(mi,1); MODULES.forEach((m,i)=>m.num=i+1); closeModal(); renderEditor(); }},
+    {label:'Cancel',cls:'btn btn-ghost',fn:closeModal}
+  ]);
+}
+
+function moveModule(mi, dir) {
+  const ni=mi+dir;
+  if(ni<0||ni>=MODULES.length) return;
+  [MODULES[mi],MODULES[ni]]=[MODULES[ni],MODULES[mi]];
+  MODULES.forEach((m,i)=>m.num=i+1);
+  renderEditor();
+}
+
+function addItem(mi) {
+  MODULES[mi].items.push('New competency item');
+  renderEditor();
+}
+
+function deleteItem(mi, ii) {
+  MODULES[mi].items.splice(ii,1);
+  renderEditor();
+}
+
+function moveItem(mi, ii, dir) {
+  const items=MODULES[mi].items, ni=ii+dir;
+  if(ni<0||ni>=items.length) return;
+  [items[ii],items[ni]]=[items[ni],items[ii]];
+  renderEditor();
+}
+
+function saveModules() {
+  // Read current values from inputs
+  MODULES.forEach((mod,mi)=>{
+    const nameEl=document.getElementById('emod-name-'+mod.num);
+    if(nameEl) mod.name=nameEl.value;
+    mod.items=mod.items.map((_,ii)=>{
+      const el=document.getElementById('eitem-input-'+mod.num+'-'+ii);
+      return el?el.value:_;
+    });
+  });
+  localStorage.setItem(MODULES_KEY, JSON.stringify(MODULES));
+  buildFormModules();
+  loadSavedForm();
+  showToast('✔ Modules saved! Training Form updated.');
+}
+
+function resetModules() {
+  showModal('Reset Modules?','Reset all modules to the Vortex defaults? Any custom modules or items will be lost.',[
+    {label:'Reset to Defaults',cls:'btn btn-danger',fn:()=>{ MODULES=JSON.parse(JSON.stringify(DEFAULT_MODULES)); localStorage.removeItem(MODULES_KEY); closeModal(); renderEditor(); buildFormModules(); loadSavedForm(); showToast('Modules reset to defaults'); }},
+    {label:'Cancel',cls:'btn btn-ghost',fn:closeModal}
+  ]);
+}
+
+function changePin() {
+  const p1=document.getElementById('new-pin').value, p2=document.getElementById('new-pin2').value;
+  if(!p1){ showToast('⚠️ Enter a new PIN'); return; }
+  if(p1!==p2){ showToast('⚠️ PINs do not match'); return; }
+  localStorage.setItem(ADMIN_PIN_KEY, p1);
+  document.getElementById('new-pin').value=''; document.getElementById('new-pin2').value='';
+  showToast('✔ PIN updated successfully');
+}
+
+// ═══════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════
+function showModal(title, msg, buttons) {
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-msg').textContent=msg;
+  const foot=document.getElementById('modal-foot');
+  foot.innerHTML='';
+  buttons.forEach(b=>{ const btn=document.createElement('button'); btn.className=b.cls; btn.textContent=b.label; btn.onclick=b.fn; foot.appendChild(btn); });
+  document.getElementById('modal').classList.add('show');
+}
+function closeModal() { document.getElementById('modal').classList.remove('show'); }
+
+// ═══════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════
+function showToast(msg, duration=2800) {
+  const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block';
+  setTimeout(()=>t.style.display='none', duration);
+}
+
+// ═══════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════
+function today() { return new Date().toISOString().split('T')[0]; }
+function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function showTab_direct(id) {
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  document.querySelector(`.tab-btn[onclick="showTab('${id}')"]`)?.classList.add('active');
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+buildFormModules();
+loadSavedForm();
+updateProgress();
+openMod(1);
+</script>
+</body>
+</html>
